@@ -13,7 +13,23 @@ create or replace procedure insertaAsignatura(
   v_idAsignatura integer, v_nombreAsig varchar, v_titulacion varchar, v_ncreditos integer) is
 
 begin
-  null; --El null es para que compile. Sustituyelo por la implementación de la tansacción.
+  -- Intento insertar la nueva asignatura
+  insert into asignaturas values (v_idAsignatura, v_nombreAsig, v_titulacion, v_ncreditos);
+exception
+  when DUP_VAL_ON_INDEX then
+    declare
+      v_count integer;
+    begin
+      -- Verifica si el error se debe a una violación de la clave primaria
+      select count(*) into v_count from asignaturas
+      where idAsignatura = v_idAsignatura and titulacion = v_titulacion;
+      
+      if v_count > 0 then
+        raise_application_error(-20000, 'La asignatura con idAsignatura=' || v_idAsignatura || ' esta repetida en la titulacion ' || v_titulacion || '.');
+      else
+        raise_application_error(-20001, 'La asignatura con nombre=' || v_nombreAsig || ' esta repetida en la titulacion ' || v_titulacion || '.');
+      end if;
+    end;
 end;
 /
 
